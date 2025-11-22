@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>DTV Live TV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.webmanifest">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+
+  <!-- App Icons -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png">  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      background: #000;
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 10px 16px;
+      text-align: center;
+      background: #111;
+      border-bottom: 1px solid #333;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 8px 8px 12px;
+      gap: 8px;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 12px rgba(0,0,0,0.8);
+      aspect-ratio: 16 / 9;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    .controls {
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    select, button {
+      border-radius: 999px;
+      border: 1px solid #444;
+      padding: 8px 12px;
+      background: #181818;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    select:focus, button:focus {
+      border-color: #00bcd4;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 500;
+      min-width: 90px;
+    }
+
+    button#playButton {
+      flex: 1;
+    }
+
+    button.secondary {
+      background: #101010;
+      border-color: #555;
+      font-size: 0.85rem;
+      padding-inline: 10px;
+    }
+
+    .status {
+      font-size: 0.8rem;
+      opacity: 0.85;
+    }
+
+    .status span.badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #1b5e20;
+      margin-left: 6px;
+    }
+
+    .status span.badge.error {
+      background: #b71c1c;
+    }
+
+    footer {
+      text-align: center;
+      padding: 6px 8px;
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+
+    @media (orientation: landscape) and (max-height: 520px) {
+      body {
+        flex-direction: row;
+      }
+      main {
+        flex-direction: row;
+        align-items: stretch;
+      }
+      .video-container {
+        flex: 2;
+      }
+      .controls {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DTV – Live TV</h1>
+  </header>
+
+  <main>
+    <div class="video-container">
+      <video id="video" playsinline controls></video>
+    </div>
+
+    <div class="controls">
+      <div class="row">
+        <label for="channelSelect">ช่องรายการ</label>
+        <select id="channelSelect">
+          <!-- ปรับชื่อช่อง / URL ใน app.js -->
+        </select>
+      </div>
+      <div class="row">
+        <button id="playButton">เล่น / Play</button>
+        <button id="fullscreenButton" class="secondary">เต็มจอ</button>
+        <button id="installButton" class="secondary" style="display:none;">ติดตั้งแอป</button>
+      </div>
+      <div class="status" id="status">
+        สถานะ: รอเริ่มเล่น…
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    DTV PWA • ทดลองระบบดูทีวีสด
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    // สมัคร service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js')
+        .catch(err => console.log('SW registration failed', err));
+    }
+  </script>
+</body>
+</html>
