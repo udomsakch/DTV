@@ -5,9 +5,9 @@ const APP_SHELL = [
   './',
   './index.html',
   './app.js',
-  './manifest.webmanifest'
-  // ถ้ามีไฟล์อื่น เช่น CSS หรือ icon ที่อยาก cache เพิ่ม ก็ใส่ได้
+  './manifest.json'
 ];
+
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -52,3 +52,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
