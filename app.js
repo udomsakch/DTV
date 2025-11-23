@@ -189,33 +189,24 @@ function changeChannel(direction) {
 }
 
 // -----------------------------
-// เช็คว่าอยู่ใน fullscreen หรือไม่
+// โหมด fullscreen ภายในแอป (ผ่าน class บน body)
 // -----------------------------
-function isFullscreen() {
-  return !!(
-    document.fullscreenElement ||
-    document.webkitFullscreenElement ||
-    document.msFullscreenElement
-  );
+function isAppFullscreen() {
+  return document.body.classList.contains('app-fullscreen');
+}
+
+function enterAppFullscreen() {
+  document.body.classList.add('app-fullscreen');
+}
+
+function exitAppFullscreen() {
+  document.body.classList.remove('app-fullscreen');
 }
 
 // -----------------------------
 // ปุ่มต่าง ๆ
 // -----------------------------
-playButton.addEventListener('click', async () => {
-  // พยายามขอฟูลสกรีนเมื่อกดเล่น (ถือเป็น user gesture)
-  try {
-    const container = document.querySelector('.video-container') || videoEl;
-    if (!isFullscreen() && container.requestFullscreen) {
-      await container.requestFullscreen();
-    } else if (!isFullscreen() && videoEl.webkitEnterFullscreen) {
-      // iOS Safari
-      videoEl.webkitEnterFullscreen();
-    }
-  } catch (e) {
-    console.log('fullscreen error:', e);
-  }
-
+playButton.addEventListener('click', () => {
   // โหลด/เล่นช่องตามปกติ
   if (!videoEl.src) {
     loadSelectedChannel(true);
@@ -243,17 +234,12 @@ channelSelect.addEventListener('change', () => {
   loadSelectedChannel(wasPlaying);
 });
 
-// ปุ่มเต็มจอ
+// ปุ่มเต็มจอ (โหมด fullscreen ภายในแอป)
 fullscreenBtn.addEventListener('click', () => {
-  const container = document.querySelector('.video-container') || videoEl;
-  if (isFullscreen()) {
-    document.exitFullscreen().catch(() => {});
+  if (isAppFullscreen()) {
+    exitAppFullscreen();
   } else {
-    if (container.requestFullscreen) {
-      container.requestFullscreen().catch(() => {});
-    } else if (videoEl.webkitEnterFullscreen) {
-      videoEl.webkitEnterFullscreen();
-    }
+    enterAppFullscreen();
   }
 });
 
@@ -296,22 +282,22 @@ videoEl.addEventListener('error', () => {
 });
 
 // -----------------------------
-// จับ gesture ปัดซ้าย-ขวา บนวิดีโอ
+// จับ gesture ปัดซ้าย-ขวา บนวิดีโอ (ทำงานเฉพาะตอน app-fullscreen)
 // -----------------------------
 let touchStartX = 0;
 let touchStartY = 0;
 let touchEndX   = 0;
 let touchEndY   = 0;
 
-const SWIPE_THRESHOLD = 50;  // px ขั้นต่ำที่ถือว่าเป็นการปัด
+const SWIPE_THRESHOLD = 50;      // px ขั้นต่ำที่ถือว่าเป็นการปัด
 const SWIPE_VERTICAL_LIMIT = 40; // ไม่ให้เอียงแนวตั้งมากไป
 
 function handleSwipe() {
   const dx = touchEndX - touchStartX;
   const dy = touchEndY - touchStartY;
 
-  // ต้องอยู่ใน fullscreen ก่อนถึงจะรับ swipe
-  if (!isFullscreen()) {
+  // ต้องอยู่ในโหมด app-fullscreen ก่อนถึงจะรับ swipe
+  if (!isAppFullscreen()) {
     return;
   }
 
@@ -330,25 +316,25 @@ videoEl.addEventListener('touchstart', (e) => {
   const t = e.touches[0];
   touchStartX = t.clientX;
   touchStartY = t.clientY;
-});
+}, { passive: true });
 
 videoEl.addEventListener('touchend', (e) => {
   const t = e.changedTouches[0];
   touchEndX = t.clientX;
   touchEndY = t.clientY;
   handleSwipe();
-});
+}, { passive: true });
 
-// เผื่อบาง browser ส่ง event ที่ document ตอน fullscreen
+// เผื่อบาง browser ส่ง event ที่ document
 document.addEventListener('touchstart', (e) => {
-  if (!isFullscreen()) return;
+  if (!isAppFullscreen()) return;
   const t = e.touches[0];
   touchStartX = t.clientX;
   touchStartY = t.clientY;
 }, { passive: true });
 
 document.addEventListener('touchend', (e) => {
-  if (!isFullscreen()) return;
+  if (!isAppFullscreen()) return;
   const t = e.changedTouches[0];
   touchEndX = t.clientX;
   touchEndY = t.clientY;
@@ -359,7 +345,7 @@ document.addEventListener('touchend', (e) => {
 // Initial
 // -----------------------------
 window.addEventListener('load', () => {
-  // ถ้าเปิดในโหมด PWA standalone จะมีโอกาสซ่อน header/footer ได้ถ้าต้องการ
+  // ตรวจว่าเปิดในโหมด PWA standalone หรือไม่ (เผื่ออยากใช้ปรับ UI เพิ่ม)
   const isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
     window.navigator.standalone;
